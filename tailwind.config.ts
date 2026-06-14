@@ -8,9 +8,17 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-fraunces)", "serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
+      },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        brand: {
+          bg: "#FDF8F3",
+          accent: "#F59E0B",
+          text: "#1C1917",
+          card: "#FFFFFF",
+        },
       },
     },
   },
