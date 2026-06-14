@@ -75,9 +75,20 @@ Tone: ${tone}`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Gemini API call failed with status ${response.status}:`, errorText);
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error?.message) {
+          return NextResponse.json(
+            { error: errorJson.error.message },
+            { status: response.status }
+          );
+        }
+      } catch {
+        // ignore parsing errors and use default
+      }
       return NextResponse.json(
-        { error: "Failed to generate content package from Gemini API." },
-        { status: 500 }
+        { error: `Gemini API error (Status ${response.status}): Failed to generate content.` },
+        { status: response.status }
       );
     }
 

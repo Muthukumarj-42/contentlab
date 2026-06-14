@@ -79,7 +79,16 @@ export default function PackageModePage() {
       });
 
       if (!response.ok) {
-        throw new Error('Something went wrong. Try again.');
+        let errMsg = 'Something went wrong. Try again.';
+        try {
+          const errData = await response.json();
+          if (errData.error) {
+            errMsg = errData.error;
+          }
+        } catch {
+          // ignore
+        }
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -254,11 +263,18 @@ export default function PackageModePage() {
 
         {/* Local Error State */}
         {error && (
-          <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">
-            <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="font-semibold text-sm">Something went wrong. Try again.</span>
+          <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 flex flex-col gap-1.5">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-semibold text-sm">Something went wrong. Try again.</span>
+            </div>
+            {error !== 'Something went wrong. Try again.' && (
+              <p className="text-xs text-red-600/90 ml-8 font-mono break-words leading-normal bg-red-100/50 p-2.5 rounded-lg border border-red-200/50">
+                {error}
+              </p>
+            )}
           </div>
         )}
       </div>
