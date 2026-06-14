@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const systemPrompt = `You are ContentLab AI, an expert content strategist for social media creators. The user will describe their content idea. Your job is to return a content package as a JSON object with exactly these fields:
 {
