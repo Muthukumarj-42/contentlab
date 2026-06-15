@@ -6,7 +6,13 @@ interface ModelError {
 }
 
 async function generateWithFallback(systemPrompt: string, userPrompt: string, apiKey: string) {
-  const modelCandidates = ["gemini-3.5-flash", "gemini-flash-latest", "gemini-2.5-flash"];
+  const modelCandidates = [
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-3.5-flash",
+    "gemini-flash-latest",
+    "gemini-2.5-flash"
+  ];
   let lastError: ModelError | null = null;
 
   for (const model of modelCandidates) {
@@ -159,7 +165,11 @@ Return ONLY JSON. No explanation. No markdown. No backticks.`;
     console.log(`Successfully generated content niche roadmap using model: ${model}`);
 
     try {
-      const parsedData = JSON.parse(text.trim());
+      let cleanedText = text.trim();
+      if (cleanedText.startsWith("```")) {
+        cleanedText = cleanedText.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
+      }
+      const parsedData = JSON.parse(cleanedText);
       return NextResponse.json(parsedData);
     } catch (parseError) {
       console.error("Failed to parse Gemini response as JSON:", text, parseError);
