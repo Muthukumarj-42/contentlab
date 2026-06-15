@@ -7,6 +7,68 @@ interface ModelError {
   status: number;
 }
 
+function escapeUnescapedQuotes(jsonStr: string): string {
+  let insideString = false;
+  let escaped = false;
+  let result = '';
+  
+  for (let i = 0; i < jsonStr.length; i++) {
+    const char = jsonStr[i];
+    
+    if (char === '\\') {
+      escaped = !escaped;
+      result += char;
+      continue;
+    }
+    
+    if (char === '\n' && insideString) {
+      result += '\\n';
+      continue;
+    }
+    
+    if (char === '\r' && insideString) {
+      result += '\\r';
+      continue;
+    }
+    
+    if (char === '"') {
+      if (escaped) {
+        result += char;
+        escaped = false;
+        continue;
+      }
+      
+      if (insideString) {
+        let isStructural = false;
+        let j = i + 1;
+        while (j < jsonStr.length && /\s/.test(jsonStr[j])) {
+          j++;
+        }
+        if (j < jsonStr.length) {
+          const nextChar = jsonStr[j];
+          if (nextChar === ',' || nextChar === ']' || nextChar === '}' || nextChar === ':') {
+            isStructural = true;
+          }
+        } else {
+          isStructural = true;
+        }
+        
+        if (isStructural) {
+          insideString = false;
+        } else {
+          result += '\\';
+        }
+      } else {
+        insideString = true;
+      }
+    }
+    
+    result += char;
+    escaped = false;
+  }
+  return result;
+}
+
 async function generateWithFallback(systemPrompt: string, userPrompt: string, apiKey: string) {
   const modelCandidates = [
     "gemini-2.0-flash",
@@ -128,7 +190,7 @@ Tone: ${tone}`;
       if (cleanedText.startsWith("```")) {
         cleanedText = cleanedText.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
       }
-      const parsedData = JSON.parse(cleanedText);
+      const parsedData = JSON.parse(escapeUnescapedQuotes(cleanedText));
       return NextResponse.json(parsedData);
     } catch (parseError) {
       console.error("Failed to parse Gemini response as JSON:", text, parseError);
