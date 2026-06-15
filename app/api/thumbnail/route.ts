@@ -25,27 +25,31 @@ export async function POST(req: NextRequest) {
     const plat = platform?.toLowerCase() || "";
     
     // 1. Base default dimensions from platform selection
-    if (plat.includes("reels") || plat.includes("shorts") || plat.includes("tiktok")) {
+    if (plat.includes("reels") || plat === "instagram reels") {
       imageWidth = 1080;
       imageHeight = 1920;
       resolvedRatio = "9:16";
-    } else if (plat.includes("youtube")) {
-      // Main YouTube is 1280x720, YouTube Shorts is 1080x1920 (handled above)
-      if (plat === "youtube") {
-        imageWidth = 1280;
-        imageHeight = 720;
-        resolvedRatio = "16:9";
-      } else {
-        imageWidth = 1080;
-        imageHeight = 1920;
-        resolvedRatio = "9:16";
-      }
-    } else if (plat.includes("linkedin") || plat.includes("twitter") || plat.includes("x")) {
+    } else if (plat.includes("shorts") || plat === "youtube shorts") {
+      imageWidth = 1080;
+      imageHeight = 1920;
+      resolvedRatio = "9:16";
+    } else if (plat === "youtube" || plat.includes("youtube")) {
+      imageWidth = 1280;
+      imageHeight = 720;
+      resolvedRatio = "16:9";
+    } else if (plat.includes("linkedin")) {
+      imageWidth = 1080;
+      imageHeight = 1080;
+      resolvedRatio = "1:1";
+    } else if (plat.includes("twitter") || plat.includes("x")) {
       imageWidth = 1200;
       imageHeight = 675;
       resolvedRatio = "16:9";
+    } else if (plat.includes("tiktok")) {
+      imageWidth = 1080;
+      imageHeight = 1920;
+      resolvedRatio = "9:16";
     } else {
-      // General post default
       imageWidth = 1080;
       imageHeight = 1080;
       resolvedRatio = "1:1";
@@ -53,72 +57,58 @@ export async function POST(req: NextRequest) {
 
     // 2. Aspect Ratio override overrides platform default
     if (aspectRatio && aspectRatio !== "Auto") {
-      switch (aspectRatio) {
-        case "9:16 Vertical":
-        case "9:16":
-          imageWidth = 1080;
-          imageHeight = 1920;
-          resolvedRatio = "9:16";
-          break;
-        case "16:9 Horizontal":
-        case "16:9":
-          imageWidth = 1280;
-          imageHeight = 720;
-          resolvedRatio = "16:9";
-          break;
-        case "1:1 Square":
-        case "1:1":
-          imageWidth = 1080;
-          imageHeight = 1080;
-          resolvedRatio = "1:1";
-          break;
-        case "4:5 Portrait":
-        case "4:5":
-          imageWidth = 1080;
-          imageHeight = 1350;
-          resolvedRatio = "4:5";
-          break;
-        default:
-          break;
+      if (aspectRatio.includes("9:16")) {
+        imageWidth = 1080;
+        imageHeight = 1920;
+        resolvedRatio = "9:16";
+      } else if (aspectRatio.includes("16:9")) {
+        imageWidth = 1280;
+        imageHeight = 720;
+        resolvedRatio = "16:9";
+      } else if (aspectRatio.includes("1:1")) {
+        imageWidth = 1080;
+        imageHeight = 1080;
+        resolvedRatio = "1:1";
+      } else if (aspectRatio.includes("4:5")) {
+        imageWidth = 1080;
+        imageHeight = 1350;
+        resolvedRatio = "4:5";
       }
     }
 
-    // Determine color schemes
-    let platformColorScheme = "vibrant colors, dramatic lighting";
-    if (plat.includes("instagram")) {
-      platformColorScheme = "warm sunset tones, coral and amber palette";
+    // Determine platform mood
+    let platformMood = "";
+    if (plat.includes("reels") || plat.includes("instagram")) {
+      platformMood = "warm sunset gradient background, coral to amber, vibrant South Indian aesthetic";
+    } else if (plat.includes("shorts")) {
+      platformMood = "dramatic split lighting, deep shadows, high contrast, cinematic grade";
     } else if (plat.includes("youtube")) {
-      platformColorScheme = "high contrast, bold reds and whites, dramatic lighting";
+      platformMood = "bold dramatic lighting, slightly oversaturated colors, Netflix poster quality";
     } else if (plat.includes("linkedin")) {
-      platformColorScheme = "professional blues and whites, clean corporate feel";
+      platformMood = "clean professional environment, soft natural light, corporate editorial";
     } else if (plat.includes("tiktok")) {
-      platformColorScheme = "neon accents, dark background, gen-z aesthetic";
+      platformMood = "high energy, bright background, gen-z aesthetic, neon accent tones";
     } else if (plat.includes("twitter") || plat.includes("x")) {
-      platformColorScheme = "monochromatic, high contrast black and white";
+      platformMood = "moody editorial, desaturated film look";
+    } else {
+      platformMood = "professional social media aesthetic";
     }
 
-    const aspectRatioStyle = resolvedRatio === "9:16" 
-      ? "vertical framing, portrait orientation" 
-      : resolvedRatio === "16:9" 
-      ? "horizontal framing, landscape orientation" 
-      : "square composition";
-
-    const enhancedPrompt = `
-      ${thumbnailBrief}, 
-      professional social media thumbnail design,
-      rule of thirds composition,
-      bold typography placement zone in upper third,
-      high contrast between subject and background,
-      cinematic color grading,
-      ${platformColorScheme},
-      sharp focus on main subject,
-      negative space for text overlay,
-      no watermarks, no logos, no text in image,
-      shot on Sony A7IV, 85mm lens,
-      commercial photography quality,
-      vibrant but not oversaturated,
-      ${aspectRatioStyle}
-    `.trim().replace(/\s+/g, ' ');
+    const imageOnlyPrompt = `
+${thumbnailBrief},
+cinematic photography, dramatic lighting,
+rule of thirds composition,
+large empty zone at top 30% for text overlay,
+large empty zone at bottom 20% for text overlay,
+subject fills center and right side of frame,
+${platformMood},
+high contrast between subject and background,
+sharp focus, professional commercial photography,
+Sony A7IV 85mm lens, golden hour lighting,
+NO TEXT, NO WORDS, NO LETTERS, NO WATERMARKS,
+NO LOGOS, NO TYPOGRAPHY anywhere in image,
+clean negative space for text placement
+`.trim();
 
     console.log(`Calling Hugging Face FLUX.1-schnell with size: ${imageWidth}x${imageHeight} (${resolvedRatio})`);
 
@@ -132,7 +122,7 @@ export async function POST(req: NextRequest) {
           "x-wait-for-model": "true"
         },
         body: JSON.stringify({
-          inputs: enhancedPrompt,
+          inputs: imageOnlyPrompt,
           parameters: {
             width: imageWidth,
             height: imageHeight,

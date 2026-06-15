@@ -204,39 +204,34 @@ export default function ModeStuckPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 relative pb-24 md:pb-8">
-      {/* Subtle Background Glow */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-accent/5 rounded-full blur-[60px] pointer-events-none" />
-
-      {/* Page Header */}
-      <div className="mb-8 md:mb-12 relative z-10">
-        <Link href="/" className="inline-flex items-center text-xs font-semibold text-brand-text-secondary hover:text-brand-accent transition-colors mb-3">
-          <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Dashboard
-        </Link>
-        <h1 className="font-heading text-3xl sm:text-4xl font-bold text-brand-text-primary">
-          Let&apos;s get your content flowing again
-        </h1>
-        <p className="text-sm text-brand-text-secondary mt-1 max-w-md">
-          Tell us where you are &mdash; we&apos;ll tell you what to post next.
-        </p>
-      </div>
-
+    <div className="w-full max-w-[1200px] mx-auto px-4 relative pb-24 md:pb-8 pt-6">
       {/* Two-Column Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 relative z-10 items-start">
         
         {/* Left Column - Form Card */}
-        <div className="md:col-span-5 md:sticky md:top-24 space-y-6">
+        <div className="md:col-span-5 md:sticky md:top-[80px] space-y-6">
           {!result && (
-            <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-md space-y-6">
+            <div className="bg-brand-surface border border-brand-border rounded-[20px] p-5 md:p-8 shadow-card space-y-6 transition-all duration-brand">
+              
+              {/* Page Heading breadcrumb */}
+              <div className="mb-6">
+                <Link href="/" className="inline-flex items-center gap-1 text-[13px] font-sans text-brand-text-tertiary hover:text-brand-accent transition-colors mb-3">
+                  ← Back to Home
+                </Link>
+                <h1 className="font-heading text-[28px] font-bold text-brand-text-primary leading-tight">
+                  Get content flowing
+                </h1>
+                <p className="text-sm text-brand-text-secondary mt-1">
+                  Tell us where you are &mdash; we&apos;ll tell you what to post next.
+                </p>
+              </div>
+
               <form id="stuck-form" onSubmit={handleSubmit} className="space-y-6">
                 
                 {/* SECTION 1: Required Situation */}
                 <div className="space-y-5">
                   <div className="flex items-center justify-between pb-1 border-b border-brand-border">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-accent">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#92400E]">
                       Required Fields
                     </span>
                   </div>
@@ -244,7 +239,7 @@ export default function ModeStuckPage() {
                   {/* Niche Input */}
                   <div>
                     <label htmlFor="niche" className="block text-sm font-bold text-brand-text-primary mb-1.5">
-                      Your Niche <span className="text-brand-error">*</span>
+                      Your Niche <span className="text-brand-accent">*</span>
                     </label>
                     <input
                       type="text"
@@ -255,59 +250,65 @@ export default function ModeStuckPage() {
                         if (e.target.value.trim()) setValidationError(null);
                       }}
                       placeholder="E.g. Tamil comedy, fitness, tech reviews..."
-                      className="w-full p-3.5 rounded-xl border border-brand-border bg-brand-surface-elevated text-brand-text-primary text-sm outline-none focus:border-brand-accent transition-all font-medium"
+                      className="w-full p-3.5 rounded-[12px] border border-brand-border bg-brand-bg text-brand-text-primary text-sm outline-none focus:border-brand-accent transition-all font-medium font-sans"
                     />
                   </div>
 
                   {/* Platform Selector pills */}
                   <div>
                     <span className="block text-sm font-bold text-brand-text-primary mb-2.5">
-                      Platform Target <span className="text-brand-error">*</span>
+                      Platform Target <span className="text-brand-accent">*</span>
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {platformsList.map((p) => (
-                        <button
-                          type="button"
-                          key={p}
-                          onClick={() => {
-                            setPlatform(p);
-                            setValidationError(null);
-                          }}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                            platform === p
-                              ? 'bg-brand-accent/10 text-brand-accent border-brand-accent/30 shadow-sm'
-                              : 'border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary'
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      ))}
+                      {platformsList.map((p) => {
+                        const isSelected = platform === p;
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => {
+                              setPlatform(p);
+                              setValidationError(null);
+                            }}
+                            className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-brand ${
+                              isSelected
+                                ? 'bg-brand-amber-soft border-[1.5px] border-brand-accent text-[#92400E] font-semibold'
+                                : 'bg-brand-bg border border-brand-border text-brand-text-secondary hover:bg-brand-surface-elevated hover:border-brand-border-strong'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Struggle Selector */}
+                  {/* Struggle Selector pills */}
                   <div>
                     <span className="block text-sm font-bold text-brand-text-primary mb-2.5">
-                      Your Biggest Struggle <span className="text-brand-error">*</span>
+                      Your Biggest Struggle <span className="text-brand-accent">*</span>
                     </span>
                     <div className="flex flex-col gap-2">
-                      {strugglesList.map((stg) => (
-                        <button
-                          type="button"
-                          key={stg}
-                          onClick={() => {
-                            setStruggle(stg);
-                            setValidationError(null);
-                          }}
-                          className={`p-3.5 rounded-xl text-left text-xs font-semibold border transition-all ${
-                            struggle === stg
-                              ? 'bg-brand-accent/10 text-brand-accent border-brand-accent/30 shadow-sm'
-                              : 'border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary'
-                          }`}
-                        >
-                          {stg}
-                        </button>
-                      ))}
+                      {strugglesList.map((stg) => {
+                        const isSelected = struggle === stg;
+                        return (
+                          <button
+                            key={stg}
+                            type="button"
+                            onClick={() => {
+                              setStruggle(stg);
+                              setValidationError(null);
+                            }}
+                            className={`p-3.5 rounded-xl text-left text-xs font-semibold border transition-all duration-brand ${
+                              isSelected
+                                ? 'bg-brand-amber-soft border-[1.5px] border-brand-accent text-[#92400E]'
+                                : 'bg-brand-bg border border-brand-border text-brand-text-secondary hover:bg-brand-surface-elevated hover:border-brand-border-strong'
+                            }`}
+                          >
+                            {stg}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -315,13 +316,13 @@ export default function ModeStuckPage() {
                 {/* SECTION 2: Optional Context */}
                 <div className="space-y-5 pt-2 border-t border-brand-border">
                   <div className="flex items-center justify-between pb-1">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-text-secondary">
-                      Optional Context
+                    <span className="text-[12px] font-medium text-brand-text-tertiary italic">
+                      Optional &mdash; skip if you want
                     </span>
                     <button
                       type="button"
                       onClick={handleSkipAndSubmit}
-                      className="text-[10px] font-bold text-brand-accent hover:underline uppercase tracking-wide"
+                      className="text-xs font-bold text-brand-accent hover:underline uppercase tracking-wide"
                     >
                       Skip &amp; Submit
                     </button>
@@ -338,10 +339,10 @@ export default function ModeStuckPage() {
                           type="button"
                           key={followers}
                           onClick={() => setFollowerCount(followerCount === followers ? '' : followers)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-brand ${
                             followerCount === followers
-                              ? 'bg-brand-accent/10 text-brand-accent border-brand-accent/30 shadow-sm'
-                              : 'border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary'
+                              ? 'bg-brand-amber-soft border-[1.5px] border-brand-accent text-[#92400E] font-semibold'
+                              : 'border-brand-border bg-brand-bg text-brand-text-secondary hover:bg-brand-surface-elevated hover:border-brand-border-strong'
                           }`}
                         >
                           {followers}
@@ -364,10 +365,10 @@ export default function ModeStuckPage() {
                             type="button"
                             key={type}
                             onClick={() => handleToggleContentTried(type)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-brand ${
                               isSelected
-                                ? 'bg-brand-accent/10 text-brand-accent border-brand-accent/30 shadow-sm'
-                                : 'border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary'
+                                ? 'bg-brand-amber-soft border-[1.5px] border-brand-accent text-[#92400E] font-semibold'
+                                : 'border-brand-border bg-brand-bg text-brand-text-secondary hover:bg-brand-surface-elevated hover:border-brand-border-strong'
                             }`}
                           >
                             {type}
@@ -388,10 +389,10 @@ export default function ModeStuckPage() {
                           type="button"
                           key={lang}
                           onClick={() => setLanguage(language === lang ? '' : lang)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-brand ${
                             language === lang
-                              ? 'bg-brand-accent/10 text-brand-accent border-brand-accent/30 shadow-sm'
-                              : 'border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary'
+                              ? 'bg-brand-amber-soft border-[1.5px] border-brand-accent text-[#92400E] font-semibold'
+                              : 'border-brand-border bg-brand-bg text-brand-text-secondary hover:bg-brand-surface-elevated hover:border-brand-border-strong'
                           }`}
                         >
                           {lang}
@@ -405,7 +406,7 @@ export default function ModeStuckPage() {
                 <div className="pt-4 border-t border-brand-border hidden md:block">
                   <button
                     type="submit"
-                    className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg font-bold text-md hover:bg-brand-accent/90 transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-[0.99]"
+                    className="w-full py-4 rounded-[14px] bg-brand-accent text-[#1C1008] font-bold text-md hover:bg-brand-accent-dark hover:shadow-button transition-all duration-brand flex items-center justify-center gap-1.5 active:scale-[0.99]"
                   >
                     Fix My Content &rarr;
                   </button>
@@ -416,8 +417,8 @@ export default function ModeStuckPage() {
 
           {/* Result view left-column actions */}
           {result && (
-            <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-md space-y-4">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/15">
+            <div className="bg-brand-surface border border-brand-border rounded-[20px] p-6 shadow-card space-y-4 transition-all duration-brand">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#92400E] bg-brand-amber-soft px-2.5 py-0.5 rounded border border-brand-accent-light">
                 Audit Completed
               </span>
               <h3 className="font-heading text-lg font-bold text-brand-text-primary">
@@ -428,7 +429,7 @@ export default function ModeStuckPage() {
               </p>
               <button
                 onClick={handleReset}
-                className="w-full py-3 px-4 rounded-xl bg-brand-surface border border-brand-border hover:bg-brand-surface-elevated text-xs font-bold text-brand-text-primary flex items-center justify-center gap-1.5 transition-all"
+                className="w-full py-3 px-4 rounded-[14px] bg-brand-surface border border-brand-border hover:bg-brand-surface-elevated text-xs font-bold text-brand-text-primary flex items-center justify-center gap-1.5 transition-all duration-brand"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.21" />
@@ -440,15 +441,19 @@ export default function ModeStuckPage() {
 
           {/* Sticky Mobile Button (fixed above Tab Bar) */}
           {!result && (
-            <div className="md:hidden fixed bottom-16 left-0 right-0 bg-brand-bg/95 backdrop-blur-md p-4 border-t border-brand-border z-40 shadow-lg">
+            <div className="md:hidden fixed bottom-16 left-0 right-0 bg-brand-bg/95 backdrop-blur-md p-3 border-t border-brand-border z-40 shadow-elevated">
               <button
                 type="submit"
                 form="stuck-form"
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl bg-brand-accent text-brand-bg font-bold text-sm hover:bg-brand-accent/90 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                className="w-full h-14 rounded-[14px] bg-brand-accent text-[#1C1008] font-bold text-sm hover:bg-brand-accent-dark hover:shadow-button transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
               >
                 {loading ? (
-                  <span>Analyzing...</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1C1008] animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1C1008] animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span>Fixing...</span>
+                  </div>
                 ) : (
                   <span>Fix My Content →</span>
                 )}
@@ -458,7 +463,7 @@ export default function ModeStuckPage() {
 
           {/* Validation Error warning */}
           {validationError && (
-            <div className="p-3.5 rounded-xl bg-brand-accent/5 border border-brand-accent/15 text-brand-accent text-xs font-semibold flex items-center gap-2">
+            <div className="p-3.5 rounded-[12px] bg-brand-accent/5 border border-brand-accent/15 text-brand-accent text-xs font-semibold flex items-center gap-2">
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -468,14 +473,14 @@ export default function ModeStuckPage() {
 
           {/* Local Error State */}
           {error && (
-            <div className="p-4 rounded-xl bg-brand-error/10 border border-brand-error/20 text-brand-text-primary flex flex-col gap-1.5">
+            <div className="p-4 rounded-[20px] bg-brand-error/10 border border-brand-error/20 text-brand-text-primary flex flex-col gap-1.5">
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-brand-error shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span className="font-semibold text-sm">Audit failed.</span>
               </div>
-              <p className="text-xs text-brand-error/90 font-mono break-words bg-brand-bg/45 p-2 rounded border border-brand-border">
+              <p className="text-xs font-mono break-words bg-brand-surface p-2 rounded border border-brand-border">
                 {error}
               </p>
             </div>
@@ -489,21 +494,15 @@ export default function ModeStuckPage() {
           {loading && (
             <div className="space-y-8 animate-fade-in-up">
               {/* Diagnosis shimmer */}
-              <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 md:p-8 space-y-3">
-                <div className="h-4 w-24 rounded bg-brand-surface-elevated animate-shimmer" />
-                <div className="h-6 w-1/3 rounded bg-brand-surface-elevated animate-shimmer" />
-                <div className="h-3.5 w-full rounded bg-brand-surface-elevated animate-shimmer" />
-                <div className="h-3.5 w-4/5 rounded bg-brand-surface-elevated animate-shimmer" />
-              </div>
+              <div className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-6 md:p-8 space-y-3 shadow-card animate-shimmer" />
 
               {/* Angles list shimmers */}
               <div className="space-y-4">
-                <div className="h-6 w-32 rounded bg-brand-surface animate-shimmer" />
+                <div className="h-6 w-32 rounded bg-brand-border animate-shimmer" />
                 {[1, 2].map((i) => (
-                  <div key={i} className="bg-brand-surface border border-brand-border rounded-xl p-5 flex flex-col gap-3">
-                    <div className="h-4 w-20 rounded bg-brand-surface-elevated animate-shimmer" />
-                    <div className="h-4 w-3/4 rounded bg-brand-surface-elevated animate-shimmer" />
-                    <div className="h-3 w-1/2 rounded bg-brand-surface-elevated animate-shimmer" />
+                  <div key={i} className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-5 flex flex-col gap-3 shadow-card">
+                    <div className="h-4 w-20 rounded bg-brand-border animate-shimmer" style={{ animationDelay: `${i * 100}ms` }} />
+                    <div className="h-4 w-3/4 rounded bg-brand-border animate-shimmer" style={{ animationDelay: `${i * 100 + 50}ms` }} />
                   </div>
                 ))}
               </div>
@@ -512,9 +511,9 @@ export default function ModeStuckPage() {
 
           {/* Empty State placeholder */}
           {!loading && !result && (
-            <div className="bg-brand-surface border border-brand-border border-dashed rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[400px] group hover:border-brand-accent/30 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-brand-surface-elevated border border-brand-border flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
-                <svg className="w-8 h-8 text-brand-text-tertiary group-hover:text-brand-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="bg-brand-surface border border-brand-border border-dashed rounded-[20px] p-8 text-center flex flex-col items-center justify-center min-h-[400px] group hover:border-brand-accent/30 transition-all duration-brand shadow-card">
+              <div className="w-16 h-16 rounded-full bg-brand-amber-soft flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-brand">
+                <svg className="w-8 h-8 text-brand-text-tertiary group-hover:text-brand-accent transition-colors duration-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
@@ -536,16 +535,21 @@ export default function ModeStuckPage() {
                 <h2 className="font-heading text-xl font-bold text-brand-text-primary">
                   🔍 Content Diagnosis &amp; Growth Kit
                 </h2>
-                <span className="text-[10px] font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full border border-brand-accent/20 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-brand-accent bg-brand-amber-soft px-3 py-1.5 rounded-full border border-brand-accent-light uppercase tracking-wider">
                   {platform} Audit
                 </span>
               </div>
 
               {/* 1. Diagnosis Section */}
-              <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 md:p-8 shadow-sm space-y-4">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-error bg-brand-error/10 px-2.5 py-0.5 rounded border border-brand-error/15">
-                  Strategic Diagnosis
-                </span>
+              <div className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-6 md:p-8 shadow-card space-y-4">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-accent" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-text-tertiary">
+                    Strategic Diagnosis
+                  </span>
+                </div>
                 <h2 className="font-heading text-2xl font-bold text-brand-text-primary">
                   What&apos;s Actually Wrong
                 </h2>
@@ -556,16 +560,21 @@ export default function ModeStuckPage() {
 
               {/* 2. 5 Trending Content Angles */}
               <div className="space-y-4">
-                <h3 className="font-heading text-lg font-bold text-brand-text-primary">
-                  🔥 5 Trending Content Angles
-                </h3>
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-accent" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L8 10.586 11.586 7H12z" clipRule="evenodd" />
+                  </svg>
+                  <h3 className="font-heading text-lg font-bold text-brand-text-primary">
+                    Trending Content Angles
+                  </h3>
+                </div>
                 <div className="flex overflow-x-auto scroll-snap-x no-scrollbar md:grid md:grid-cols-1 gap-4 pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
                   {result.trendingAngles.map((angle, index) => {
                     const key = `angle-${index}`;
                     return (
                       <div 
                         key={index} 
-                        className="scroll-snap-align-start w-[85vw] shrink-0 md:w-full bg-brand-surface border border-brand-border rounded-xl p-5 shadow-xs flex flex-col justify-between gap-4"
+                        className="scroll-snap-align-start w-[80vw] shrink-0 md:w-full bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-5 shadow-card flex flex-col justify-between gap-4"
                       >
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -594,7 +603,7 @@ export default function ModeStuckPage() {
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-[96ms] active:scale-95 ${
                               copiedStates[key]
                                 ? "bg-brand-success/10 border-brand-success text-brand-success"
-                                : "border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-accent/50"
+                                : "border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-accent"
                             }`}
                           >
                             {copiedStates[key] ? (
@@ -621,7 +630,7 @@ export default function ModeStuckPage() {
               </div>
 
               {/* 3. Full Script Card */}
-              <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-6 shadow-card space-y-4">
                 <div className="flex items-center justify-between mb-2 pb-2 border-b border-brand-border">
                   <h3 className="font-heading text-lg font-bold text-brand-text-primary flex items-center gap-2">
                     📝 Full Script Template
@@ -635,7 +644,7 @@ export default function ModeStuckPage() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-[96ms] active:scale-95 ${
                       copiedStates['fullScript']
                         ? "bg-brand-success/10 border-brand-success text-brand-success"
-                        : "border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-accent/50"
+                        : "border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-accent"
                     }`}
                   >
                     {copiedStates['fullScript'] ? (
@@ -661,19 +670,19 @@ export default function ModeStuckPage() {
                     <span className="block text-[9px] font-extrabold text-brand-accent uppercase tracking-wider mb-1">
                       1. Hook (Tanglish mix)
                     </span>
-                    <p className="font-semibold text-brand-text-primary">&ldquo;{result.fullScript.hook}&rdquo;</p>
+                    <p className="font-mono text-sm leading-relaxed text-brand-text-primary">&ldquo;{result.fullScript.hook}&rdquo;</p>
                   </div>
                   <div className="p-3 bg-brand-surface-elevated border border-brand-border rounded-xl">
                     <span className="block text-[9px] font-extrabold text-brand-text-secondary uppercase tracking-wider mb-1">
                       2. Middle Content
                     </span>
-                    <p className="text-brand-text-secondary whitespace-pre-wrap">{result.fullScript.middle}</p>
+                    <p className="font-mono text-sm leading-[1.8] text-brand-text-secondary whitespace-pre-wrap">{result.fullScript.middle}</p>
                   </div>
                   <div className="p-3 bg-brand-accent/5 border border-brand-accent/15 rounded-xl">
                     <span className="block text-[9px] font-extrabold text-brand-accent uppercase tracking-wider mb-1">
                       3. Call to Action (CTA)
                     </span>
-                    <p className="font-semibold text-brand-text-primary">&ldquo;{result.fullScript.cta}&rdquo;</p>
+                    <p className="font-mono text-sm leading-relaxed text-brand-text-primary">&ldquo;{result.fullScript.cta}&rdquo;</p>
                   </div>
                 </div>
               </div>
@@ -685,7 +694,7 @@ export default function ModeStuckPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {result.contentMix.map((mix, index) => (
-                    <div key={index} className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                    <div key={index} className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-6 shadow-card flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <span className="font-heading text-2xl font-black text-brand-accent">
@@ -705,7 +714,7 @@ export default function ModeStuckPage() {
               </div>
 
               {/* 5. Quick Win */}
-              <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-6 shadow-card space-y-4">
                 <div className="flex items-center justify-between mb-2 pb-2 border-b border-brand-border">
                   <h3 className="font-heading text-lg font-bold text-brand-text-primary flex items-center gap-2">
                     ⚡ Quick Win &mdash; Post This Today
@@ -719,7 +728,7 @@ export default function ModeStuckPage() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-[96ms] active:scale-95 ${
                       copiedStates['quickWin']
                         ? "bg-brand-success/10 border-brand-success text-brand-success"
-                        : "border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-accent/50"
+                        : "border-brand-border bg-brand-surface-elevated text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-accent"
                     }`}
                   >
                     {copiedStates['quickWin'] ? (
@@ -755,11 +764,11 @@ export default function ModeStuckPage() {
                     <span className="block text-[9px] font-extrabold text-brand-text-secondary uppercase tracking-wider mb-1">
                       Caption
                     </span>
-                    <p className="text-xs text-brand-text-secondary leading-relaxed whitespace-pre-wrap">{result.quickWin.caption}</p>
+                    <p className="font-mono text-xs leading-[1.8] text-brand-text-secondary whitespace-pre-wrap">{result.quickWin.caption}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {result.quickWin.hashtags.map((tag, i) => (
-                      <span key={i} className="text-[10px] font-semibold text-brand-accent bg-brand-accent/5 px-2 py-0.5 rounded border border-brand-accent/15">
+                      <span key={i} className="text-[10px] font-semibold text-brand-accent bg-brand-amber-soft px-2 py-0.5 rounded border border-brand-accent-light">
                         {tag.startsWith('#') ? tag : `#${tag}`}
                       </span>
                     ))}
@@ -773,29 +782,60 @@ export default function ModeStuckPage() {
                   📅 7-Day Action Content Plan
                 </h3>
                 
-                <div className="space-y-2.5">
+                {/* Desktop view: 7 cards in horizontal scroll */}
+                <div className="hidden md:flex overflow-x-auto gap-4 no-scrollbar pb-4">
+                  {result.sevenDayPlan.map((plan) => (
+                    <div 
+                      key={plan.day} 
+                      className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] p-5 shadow-card min-w-[200px] flex flex-col justify-between h-56"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-7 h-7 rounded-full bg-brand-accent text-brand-bg flex items-center justify-center text-xs font-bold">
+                            {plan.day}
+                          </span>
+                          <span className="text-xs font-semibold text-brand-accent">
+                            {getDayLabel(plan.day)}
+                          </span>
+                        </div>
+                        <span className="inline-block bg-brand-amber-soft border border-brand-accent-light rounded-full px-2.5 py-0.5 text-[10px] font-bold text-[#92400E]">
+                          {plan.format}
+                        </span>
+                        <h5 className="text-xs font-bold text-brand-text-primary">
+                          {plan.postType}
+                        </h5>
+                        <p className="text-xs text-brand-text-secondary leading-relaxed line-clamp-3">
+                          {plan.topic}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Mobile view: accordion collapse list */}
+                <div className="md:hidden space-y-2.5">
                   {result.sevenDayPlan.map((plan) => {
                     const isOpen = activeDay === plan.day;
                     return (
                       <div 
                         key={plan.day} 
-                        className="bg-brand-surface border border-brand-border rounded-xl overflow-hidden shadow-sm transition-all"
+                        className="bg-brand-surface border border-brand-border border-l-[3px] border-l-brand-accent rounded-[20px] overflow-hidden shadow-card transition-all"
                       >
                         {/* Accordion Trigger Header */}
                         <button
                           type="button"
                           onClick={() => toggleAccordion(plan.day)}
-                          className="w-full p-4 flex items-center justify-between text-left hover:bg-brand-surface-elevated/50 transition-colors"
+                          className="w-full p-4 flex items-center justify-between text-left hover:bg-brand-surface-elevated transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="font-heading text-sm font-extrabold text-brand-accent shrink-0">
-                              {getDayLabel(plan.day)}
+                            <span className="w-7 h-7 rounded-full bg-brand-accent text-brand-bg flex items-center justify-center text-xs font-bold shrink-0">
+                              {plan.day}
                             </span>
                             <div className="h-4 w-px bg-brand-border shrink-0" />
-                            <span className="text-xs font-bold text-brand-text-primary truncate max-w-[150px] sm:max-w-xs">
+                            <span className="text-xs font-bold text-brand-text-primary truncate max-w-[150px]">
                               {plan.postType}
                             </span>
-                            <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider border bg-brand-surface-elevated text-brand-text-secondary border-brand-border">
+                            <span className="bg-brand-amber-soft border border-brand-accent-light rounded-full px-2 py-0.5 text-[10px] font-bold text-[#92400E] shrink-0">
                               {plan.format}
                             </span>
                           </div>
@@ -815,15 +855,10 @@ export default function ModeStuckPage() {
                         {/* Accordion Expandable Body */}
                         {isOpen && (
                           <div className="px-4 pb-4 pt-1 border-t border-brand-border bg-brand-surface-elevated/20 animate-fade-in-up">
-                            <div className="sm:hidden mb-2.5">
-                              <span className="inline-block px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider border bg-brand-surface-elevated text-brand-text-secondary border-brand-border">
-                                Format: {plan.format}
-                              </span>
-                            </div>
                             <span className="block text-[9px] font-extrabold text-brand-text-tertiary uppercase tracking-wider mb-1">
                               Topic Strategy &amp; Idea
                             </span>
-                            <p className="text-xs text-brand-text-secondary leading-relaxed font-medium whitespace-pre-wrap">
+                            <p className="text-xs text-brand-text-secondary leading-relaxed font-medium">
                               {plan.topic}
                             </p>
                           </div>
