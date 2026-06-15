@@ -2,6 +2,81 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+interface ModelError {
+  message: string;
+  status: number;
+}
+
+async function generateWithFallback(systemPrompt: string, userPrompt: string, apiKey: string) {
+  const modelCandidates = ["gemini-3.5-flash", "gemini-flash-latest", "gemini-2.5-flash"];
+  let lastError: ModelError | null = null;
+
+  for (const model of modelCandidates) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [
+          {
+            parts: [
+              {
+                text: userPrompt
+              }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [
+            {
+              text: systemPrompt
+            }
+          ]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.7
+        }
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (textResponse) {
+          return { text: textResponse, model };
+        }
+      } else {
+        const errorText = await response.text();
+        console.warn(`Model ${model} failed with status ${response.status}:`, errorText);
+        try {
+          const errorJson = JSON.parse(errorText);
+          lastError = { 
+            message: errorJson.error?.message || `API error (Status ${response.status})`, 
+            status: response.status 
+          };
+        } catch {
+          lastError = { 
+            message: `API error (Status ${response.status})`, 
+            status: response.status 
+          };
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Fetch failed";
+      console.warn(`Model ${model} threw fetch error:`, err);
+      lastError = { message: msg, status: 500 };
+    }
+  }
+
+  throw lastError || new Error("All fallback models failed to generate content.");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { contentIdea, platform, tone } = await req.json();
@@ -23,8 +98,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
     const systemPrompt = `You are ContentLab AI, an expert content strategist for social media creators. The user will describe their content idea. Your job is to return a content package as a JSON object with exactly these fields:
 {
   "hooks": string[] (exactly 5 hooks — curiosity, emotional, contrarian, storytelling, authority. ALL hooks must be written in Tanglish [Tamil-English mix], the way Tamil Nadu college students actually talk on Instagram. Not pure English, not pure Tamil. Mixed naturally),
@@ -41,73 +114,14 @@ Return ONLY the JSON object. No explanation. No markdown. No backticks.`;
 Platform: ${platform}
 Tone: ${tone}`;
 
-    const payload = {
-      contents: [
-        {
-          parts: [
-            {
-              text: userPrompt
-            }
-          ]
-        }
-      ],
-      systemInstruction: {
-        parts: [
-          {
-            text: systemPrompt
-          }
-        ]
-      },
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.7
-      }
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Gemini API call failed with status ${response.status}:`, errorText);
-      try {
-        const errorJson = JSON.parse(errorText);
-        if (errorJson.error?.message) {
-          return NextResponse.json(
-            { error: errorJson.error.message },
-            { status: response.status }
-          );
-        }
-      } catch {
-        // ignore parsing errors and use default
-      }
-      return NextResponse.json(
-        { error: `Gemini API error (Status ${response.status}): Failed to generate content.` },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!textResponse) {
-      console.error("Empty content in Gemini response:", JSON.stringify(data));
-      return NextResponse.json(
-        { error: "Invalid response layout received from AI generator." },
-        { status: 500 }
-      );
-    }
+    const { text, model } = await generateWithFallback(systemPrompt, userPrompt, apiKey);
+    console.log(`Successfully generated content using model: ${model}`);
 
     try {
-      const parsedData = JSON.parse(textResponse.trim());
+      const parsedData = JSON.parse(text.trim());
       return NextResponse.json(parsedData);
     } catch (parseError) {
-      console.error("Failed to parse Gemini response as JSON:", textResponse, parseError);
+      console.error("Failed to parse Gemini response as JSON:", text, parseError);
       return NextResponse.json(
         { error: "Failed to parse content package JSON from AI." },
         { status: 500 }
@@ -116,6 +130,14 @@ Tone: ${tone}`;
 
   } catch (error: unknown) {
     console.error("API generate route error:", error);
+    // If it's our structured model error
+    if (error && typeof error === "object" && "message" in error && "status" in error) {
+      const modelErr = error as ModelError;
+      return NextResponse.json(
+        { error: modelErr.message },
+        { status: modelErr.status }
+      );
+    }
     const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json(
       { error: errorMessage },
