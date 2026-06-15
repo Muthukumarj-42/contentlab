@@ -26,6 +26,80 @@ export default function PackageModePage() {
   const [result, setResult] = useState<ContentPackageResult | null>(null);
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
 
+  const [editedBrief, setEditedBrief] = useState('');
+  const [aspectRatio, setAspectRatio] = useState('Auto');
+  const [thumbLoading, setThumbLoading] = useState(false);
+  const [thumbError, setThumbError] = useState<string | null>(null);
+  const [thumbUrls, setThumbUrls] = useState<string[] | null>(null);
+  const [resolvedRatio, setResolvedRatio] = useState('');
+  const [resolvedDimensions, setResolvedDimensions] = useState('');
+
+  const generateThumbnail = async () => {
+    setThumbLoading(true);
+    setThumbError(null);
+    try {
+      const response = await fetch('/api/thumbnail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          thumbnailBrief: editedBrief,
+          platform,
+          aspectRatio,
+        }),
+      });
+
+      if (!response.ok) {
+        let errMsg = 'Failed to generate thumbnail. Try again.';
+        try {
+          const errData = await response.json();
+          if (errData.error) {
+            errMsg = errData.error;
+          }
+        } catch {
+          // ignore
+        }
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+      setThumbUrls(data.urls);
+      setResolvedRatio(data.resolvedRatio);
+      setResolvedDimensions(data.dimensions);
+    } catch (err: unknown) {
+      setThumbError(err instanceof Error ? err.message : 'Failed to generate thumbnail. Try again.');
+    } finally {
+      setThumbLoading(false);
+    }
+  };
+
+  const downloadImage = async (url: string, index: number) => {
+    try {
+      setCopiedStates((prev) => ({ ...prev, [`dl-${index}`]: true }));
+      
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `contentlab-thumbnail-${index + 1}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+      
+      setTimeout(() => {
+        setCopiedStates((prev) => ({ ...prev, [`dl-${index}`]: false }));
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to download image, opening in new tab instead.", err);
+      window.open(url, '_blank');
+      setCopiedStates((prev) => ({ ...prev, [`dl-${index}`]: false }));
+    }
+  };
+
   const copyToClipboard = async (text: string, key: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -97,6 +171,9 @@ export default function PackageModePage() {
       }
 
       setResult(data);
+      setEditedBrief(data.thumbnailBrief);
+      setThumbUrls(null);
+      setThumbError(null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Try again.');
     } finally {
@@ -215,6 +292,7 @@ export default function PackageModePage() {
               >
                 <option value="Instagram Reels">Instagram Reels</option>
                 <option value="YouTube Shorts">YouTube Shorts</option>
+                <option value="YouTube">YouTube</option>
                 <option value="LinkedIn">LinkedIn</option>
                 <option value="Twitter/X">Twitter/X</option>
                 <option value="TikTok">TikTok</option>
@@ -465,21 +543,165 @@ export default function PackageModePage() {
                 <h3 className="font-heading text-lg font-bold text-brand-text mb-3 flex items-center gap-2">
                   🎨 Thumbnail Design Concept
                 </h3>
-                <p className="text-sm text-[#1C1917]/70 leading-relaxed mb-6 italic">
-                  &ldquo;{result.thumbnailBrief}&rdquo;
-                </p>
+                <textarea
+                  value={editedBrief}
+                  onChange={(e) => setEditedBrief(e.target.value)}
+                  className="w-full text-sm text-[#1C1917]/70 leading-relaxed mb-4 italic p-3 border border-dashed border-[#EADFC9] rounded-xl outline-none focus:border-brand-accent/50 focus:bg-[#FDF8F3]/10 resize-y bg-transparent font-medium"
+                  rows={4}
+                  placeholder="Design brief..."
+                />
+                
+                {/* Aspect Ratio Selector */}
+                <div className="mb-4">
+                  <label htmlFor="aspectRatio" className="block text-xs font-bold text-brand-text mb-1.5 uppercase tracking-wider">
+                    Aspect Ratio Override
+                  </label>
+                  <select
+                    id="aspectRatio"
+                    value={aspectRatio}
+                    onChange={(e) => setAspectRatio(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-[#EADFC9] bg-[#FDF8F3]/40 text-brand-text text-sm outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/10 transition-all cursor-pointer font-medium"
+                  >
+                    <option value="Auto">Auto (detected from platform)</option>
+                    <option value="9:16">9:16 Vertical</option>
+                    <option value="16:9">16:9 Horizontal</option>
+                    <option value="1:1">1:1 Square</option>
+                    <option value="4:5">4:5 Portrait</option>
+                  </select>
+                </div>
               </div>
+              
               <button 
-                disabled 
-                className="w-full py-2.5 px-4 rounded-xl bg-neutral-100 text-neutral-400 font-semibold text-xs cursor-not-allowed border border-neutral-200 flex items-center justify-center gap-2 hover:bg-neutral-150 transition-colors"
+                type="button"
+                onClick={generateThumbnail}
+                disabled={thumbLoading || !editedBrief.trim()}
+                className="w-full py-3 px-4 rounded-xl bg-brand-accent text-white font-bold text-sm hover:bg-brand-accent/90 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
               >
-                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>Generate Thumbnail (Coming soon)</span>
+                {thumbLoading ? (
+                  <>
+                    <svg className="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Generate Thumbnail</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
+
+          {/* Thumbnail Generation Error State */}
+          {thumbError && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3">
+              <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-semibold text-sm">Failed to generate thumbnail: {thumbError}</span>
+            </div>
+          )}
+
+          {/* Side-by-side Thumbnails block */}
+          {thumbUrls && thumbUrls.length > 0 && (
+            <div className="bg-white border border-[#EADFC9]/50 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading text-lg font-bold text-brand-text flex items-center gap-2">
+                  🖼️ Generated Thumbnail Variations
+                </h3>
+                <span className="bg-brand-accent/10 text-brand-accent font-semibold px-2.5 py-1 rounded-full text-xs">
+                  {resolvedRatio} • {resolvedDimensions}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {thumbUrls.map((url, index) => {
+                  let aspectClass = "aspect-square";
+                  if (resolvedRatio === "9:16") {
+                    aspectClass = "aspect-[9/16] max-h-[400px] mx-auto";
+                  } else if (resolvedRatio === "16:9") {
+                    aspectClass = "aspect-[16/9]";
+                  } else if (resolvedRatio === "4:5") {
+                    aspectClass = "aspect-[4/5] max-h-[400px] mx-auto";
+                  }
+
+                  const isDownloading = copiedStates[`dl-${index}`];
+
+                  return (
+                    <div key={index} className="flex flex-col gap-3">
+                      <div className={`relative w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200 ${aspectClass}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={url} 
+                          alt={`Thumbnail variation ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => downloadImage(url, index)}
+                          className="flex-grow py-2 px-3 rounded-lg border border-[#EADFC9] bg-[#FDF8F3] hover:bg-brand-accent/15 text-xs font-semibold text-brand-text flex items-center justify-center gap-1.5 transition-colors"
+                        >
+                          {isDownloading ? (
+                            <>
+                              <svg className="w-3.5 h-3.5 text-emerald-600 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                              </svg>
+                              <span className="text-emerald-600 font-bold">Downloading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                              </svg>
+                              <span>Download</span>
+                            </>
+                          )}
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={generateThumbnail}
+                          className="py-2 px-3 rounded-lg border border-[#EADFC9] bg-white hover:bg-brand-accent/10 text-xs font-semibold text-brand-text flex items-center justify-center gap-1.5 transition-colors"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.21" />
+                          </svg>
+                          <span>Regenerate</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-center text-[#1C1917]/50 mt-4 font-semibold">
+                Not happy? Edit the brief above and regenerate
+              </p>
+            </div>
+          )}
+
+          {/* Thumbnail Loading block */}
+          {thumbLoading && (
+            <div className="bg-white border border-[#EADFC9]/30 rounded-2xl p-8 shadow-sm flex flex-col items-center justify-center text-center animate-pulse">
+              <div className="relative w-12 h-12 mb-3">
+                <div className="absolute inset-0 rounded-full border-4 border-brand-accent/20"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-t-brand-accent border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+              </div>
+              <p className="font-heading text-md font-bold text-brand-text">
+                Generating your thumbnail...
+              </p>
+              <p className="text-xs text-[#1C1917]/50 mt-1">
+                Using FLUX Schnell to draw 2 high-quality thumbnails.
+              </p>
+            </div>
+          )}
 
           {/* Engagement Score Section */}
           <div className="bg-white border border-[#EADFC9]/50 rounded-2xl p-6 shadow-sm">
