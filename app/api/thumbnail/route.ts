@@ -125,11 +125,11 @@ CLEAN IMAGE ONLY. ANY TEXT IN IMAGE = FAIL.
 `.trim();
 
     console.log(
-      `Calling Hugging Face FLUX.1-dev with size: ${imageWidth}x${imageHeight} (${resolvedRatio})`,
+      `Calling Hugging Face FLUX.1-schnell with size: ${imageWidth}x${imageHeight} (${resolvedRatio})`,
     );
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-dev",
+      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
       {
         method: "POST",
         headers: {
@@ -142,8 +142,8 @@ CLEAN IMAGE ONLY. ANY TEXT IN IMAGE = FAIL.
           parameters: {
             width: imageWidth,
             height: imageHeight,
-            num_inference_steps: 28,
-            guidance_scale: 3.5,
+            num_inference_steps: 4,
+            guidance_scale: 0.0,
             negative_prompt:
               "text, words, letters, watermark, logo, signature, caption, typography, font, writing, label, subtitle, title, heading, numbers, symbols, characters, alphabets",
           },
