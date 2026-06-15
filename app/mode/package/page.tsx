@@ -175,6 +175,42 @@ export default function PackageModePage() {
     setResolvedDimensions(defaultDim);
   }, [platform, aspectRatio]);
 
+  // Synchronize canvas composite image when base image or hook selection changes
+  useEffect(() => {
+    if (!baseThumbUrl) return;
+    
+    let isMounted = true;
+    const runComposite = async () => {
+      try {
+        let w = 1280;
+        let h = 720;
+        if (resolvedDimensions) {
+          const parts = resolvedDimensions.split('×');
+          if (parts.length === 2) {
+            w = parseInt(parts[0]) || 1280;
+            h = parseInt(parts[1]) || 720;
+          }
+        }
+        const selectedHook = result?.hooks?.[selectedHookIndex] || 'ContentLab';
+        const compImg = await compositeImage(baseThumbUrl, selectedHook, platform, w, h);
+        if (isMounted) {
+          setCompositedThumbUrl(compImg);
+          setThumbLoading(false); // Stop loading after composite is ready
+        }
+      } catch (err) {
+        console.error("Effect composite error:", err);
+        if (isMounted) {
+          setThumbLoading(false);
+        }
+      }
+    };
+    
+    runComposite();
+    return () => {
+      isMounted = false;
+    };
+  }, [baseThumbUrl, selectedHookIndex, platform, resolvedDimensions, result]);
+
   const generateThumbnail = async () => {
     setThumbLoading(true);
     setThumbError(null);
@@ -207,58 +243,20 @@ export default function PackageModePage() {
       }
 
       const data = await response.json();
-      const baseImg = data.image; // base64 URL
-      setBaseThumbUrl(baseImg);
       setResolvedRatio(data.resolvedRatio);
       setResolvedDimensions(data.dimensions);
-      
-      // Show base image briefly (300ms)
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Get dimensions for canvas drawing
-      let w = 1280;
-      let h = 720;
-      if (data.dimensions) {
-        const parts = data.dimensions.split('×');
-        if (parts.length === 2) {
-          w = parseInt(parts[0]) || 1280;
-          h = parseInt(parts[1]) || 720;
-        }
-      }
-      
-      // Run compositeImage() with first hook (hook index 0)
-      const firstHook = result?.hooks?.[0] || 'ContentLab';
-      const compImg = await compositeImage(baseImg, firstHook, platform, w, h);
-      setCompositedThumbUrl(compImg);
       setSelectedHookIndex(0);
       setShowOverlay(true);
+      setBaseThumbUrl(data.image); // Triggers useEffect to composite
     } catch (err: unknown) {
       setThumbError(err instanceof Error ? err.message : 'Failed to generate thumbnail. Try again.');
-    } finally {
       setThumbLoading(false);
     }
   };
 
-  const handleHookSelect = async (index: number) => {
+  const handleHookSelect = (index: number) => {
     setSelectedHookIndex(index);
-    if (!baseThumbUrl) return;
-    try {
-      let w = 1280;
-      let h = 720;
-      if (resolvedDimensions) {
-        const parts = resolvedDimensions.split('×');
-        if (parts.length === 2) {
-          w = parseInt(parts[0]) || 1280;
-          h = parseInt(parts[1]) || 720;
-        }
-      }
-      const selectedHook = result?.hooks?.[index] || 'ContentLab';
-      const compImg = await compositeImage(baseThumbUrl, selectedHook, platform, w, h);
-      setCompositedThumbUrl(compImg);
-      setShowOverlay(true);
-    } catch (err) {
-      console.error("Recomposite error:", err);
-    }
+    setShowOverlay(true);
   };
 
   const downloadThumbnail = () => {
@@ -941,7 +939,7 @@ export default function PackageModePage() {
                     <div className="relative border border-brand-border bg-brand-surface rounded-[12px] overflow-hidden flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img 
-                        src={showOverlay ? (compositedThumbUrl || baseThumbUrl) : baseThumbUrl} 
+                        src={showOverlay ? (compositedThumbUrl || '') : baseThumbUrl} 
                         alt="FLUX Generated Thumbnail Preview"
                         className="w-full rounded-[12px] object-contain max-h-[500px] mx-auto shadow-inner"
                       />
