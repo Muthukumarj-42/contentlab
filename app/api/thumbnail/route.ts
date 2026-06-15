@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
     console.log(`Calling Hugging Face FLUX.1-schnell with size: ${imageWidth}x${imageHeight} (${resolvedRatio})`);
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+      "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
       {
         method: "POST",
         headers: {
